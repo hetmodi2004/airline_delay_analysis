@@ -73,11 +73,11 @@ st.markdown("Exploring why flights get delayed across US airports from 2003–20
 # METRIC CARDS
 # ============================================================
 col1, col2, col3, col4, col5 = st.columns(5)
-col1.metric("Total Flights",    f"{filtered['arr_flights'].sum():,.0f}")
-col2.metric("Total Delayed",    f"{filtered['arr_del15'].sum():,.0f}")
-col3.metric("Total Cancelled",  f"{filtered['arr_cancelled'].sum():,.0f}")
-col4.metric("Avg Delay Rate",   f"{filtered['delay_rate'].mean():.1f}%")
-col5.metric("Avg Cancel Rate",  f"{filtered['cancel_rate'].mean():.1f}%")
+col1.metric("Total Flights",   f"{filtered['arr_flights'].sum():,.0f}")
+col2.metric("Total Delayed",   f"{filtered['arr_del15'].sum():,.0f}")
+col3.metric("Total Cancelled", f"{filtered['arr_cancelled'].sum():,.0f}")
+col4.metric("Avg Delay Rate",  f"{filtered['delay_rate'].mean():.1f}%")
+col5.metric("Avg Cancel Rate", f"{filtered['cancel_rate'].mean():.1f}%")
 
 st.divider()
 
@@ -88,7 +88,7 @@ tab1, tab2, tab3, tab4 = st.tabs([
     "📈 Overview",
     "🏢 By Airline",
     "🌦️ Delay Causes",
-    "🏆 Rankings",
+    "🏆 Rankings"
 ])
 
 # ============================================================
@@ -326,5 +326,6 @@ with tab4:
         worst_airport.columns = ['Airport','Avg Delay Rate (%)','Total Flights']
         worst_airport['Avg Delay Rate (%)'] = worst_airport['Avg Delay Rate (%)'].round(2)
         st.dataframe(worst_airport, use_container_width=True, hide_index=True)
+
 st.divider()
 st.caption("Data source: Bureau of Transportation Statistics (BTS) | Dashboard by Streamlit")
