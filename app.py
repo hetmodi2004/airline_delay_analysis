@@ -6,6 +6,44 @@ import plotly.graph_objects as go
 st.set_page_config(page_title="Airline Delay Dashboard", page_icon="✈️", layout="wide")
 
 # ============================================================
+# COLORS
+# ============================================================
+TEAL  = '#1D9E75'
+AMBER = '#BA7517'
+BLUE  = '#378ADD'
+CORAL = '#D85A30'
+GREY  = '#888780'
+COLORS = [TEAL, AMBER, BLUE, CORAL, GREY]
+
+LAYOUT = dict(
+    paper_bgcolor='#F8F9FA',
+    plot_bgcolor='#F8F9FA',
+    font=dict(color='#1a1a1a', size=13),
+    title_font=dict(size=16, color='#1a1a1a'),
+    xaxis=dict(
+        tickfont=dict(color='#1a1a1a', size=12),
+        titlefont=dict(color='#1a1a1a', size=13),
+        linecolor='#333333',
+        linewidth=1,
+        gridcolor='#E0E0E0'
+    ),
+    yaxis=dict(
+        tickfont=dict(color='#1a1a1a', size=12),
+        titlefont=dict(color='#1a1a1a', size=13),
+        linecolor='#333333',
+        linewidth=1,
+        gridcolor='#E0E0E0'
+    ),
+    legend=dict(
+        font=dict(color='#1a1a1a', size=12),
+        bgcolor='#F8F9FA',
+        borderwidth=1,
+        bordercolor='#E0E0E0'
+    ),
+    margin=dict(t=60, b=60, l=60, r=40)
+)
+
+# ============================================================
 # LOAD DATA
 # ============================================================
 @st.cache_data
@@ -103,18 +141,23 @@ with tab1:
         fig1 = px.line(yearly, x='year', y='delay_rate', markers=True,
                        labels={'delay_rate':'Delay Rate (%)','year':'Year'},
                        title='Average Delay Rate by Year')
-        fig1.update_traces(line_color='#1D9E75', line_width=2)
-        fig1.update_layout(paper_bgcolor='white', plot_bgcolor='white')
+        fig1.update_traces(line_color=TEAL, line_width=3,
+                           marker=dict(size=8, color=TEAL))
+        fig1.update_layout(**LAYOUT)
         st.plotly_chart(fig1, use_container_width=True)
 
     with col2:
         st.subheader("Delay Rate by Season")
         seasonal = filtered.groupby('season')['delay_rate'].mean().reset_index()
         fig2 = px.bar(seasonal, x='season', y='delay_rate', color='season',
-                      color_discrete_sequence=['#1D9E75','#BA7517','#378ADD','#D85A30'],
+                      color_discrete_map={
+                          'Winter':BLUE,'Spring':TEAL,
+                          'Summer':AMBER,'Fall':CORAL
+                      },
                       labels={'delay_rate':'Delay Rate (%)','season':'Season'},
                       title='Average Delay Rate by Season')
-        fig2.update_layout(paper_bgcolor='white', plot_bgcolor='white', showlegend=False)
+        fig2.update_layout(**LAYOUT, showlegend=False)
+        fig2.update_traces(marker_line_color='#333333', marker_line_width=1)
         st.plotly_chart(fig2, use_container_width=True)
 
     col1, col2 = st.columns(2)
@@ -129,8 +172,9 @@ with tab1:
         fig3 = px.line(monthly, x='month_name', y='delay_rate', markers=True,
                        labels={'delay_rate':'Delay Rate (%)','month_name':'Month'},
                        title='Average Delay Rate by Month')
-        fig3.update_traces(line_color='#BA7517', line_width=2)
-        fig3.update_layout(paper_bgcolor='white', plot_bgcolor='white')
+        fig3.update_traces(line_color=AMBER, line_width=3,
+                           marker=dict(size=8, color=AMBER))
+        fig3.update_layout(**LAYOUT)
         st.plotly_chart(fig3, use_container_width=True)
 
     with col2:
@@ -139,8 +183,9 @@ with tab1:
         fig4 = px.bar(yearly_cancel, x='year', y='cancel_rate',
                       labels={'cancel_rate':'Cancel Rate (%)','year':'Year'},
                       title='Average Cancellation Rate by Year',
-                      color_discrete_sequence=['#D85A30'])
-        fig4.update_layout(paper_bgcolor='white', plot_bgcolor='white')
+                      color_discrete_sequence=[CORAL])
+        fig4.update_traces(marker_line_color='#333333', marker_line_width=1)
+        fig4.update_layout(**LAYOUT)
         st.plotly_chart(fig4, use_container_width=True)
 
     st.subheader("Total Delay Minutes Over Time")
@@ -148,8 +193,8 @@ with tab1:
     fig5 = px.area(yearly_delay, x='year', y='total_delay_min',
                    labels={'total_delay_min':'Total Delay Minutes','year':'Year'},
                    title='Total Delay Minutes by Year',
-                   color_discrete_sequence=['#378ADD'])
-    fig5.update_layout(paper_bgcolor='white', plot_bgcolor='white')
+                   color_discrete_sequence=[BLUE])
+    fig5.update_layout(**LAYOUT)
     st.plotly_chart(fig5, use_container_width=True)
 
 # ============================================================
@@ -169,8 +214,12 @@ with tab2:
                       orientation='h',
                       labels={'delay_rate':'Delay Rate (%)','carrier_name':'Airline'},
                       title='Average Delay Rate by Airline',
-                      color='delay_rate', color_continuous_scale='teal')
-        fig6.update_layout(paper_bgcolor='white', plot_bgcolor='white')
+                      color='delay_rate',
+                      color_continuous_scale=[
+                          [0,'#1D9E75'],[0.5,'#BA7517'],[1,'#D85A30']
+                      ])
+        fig6.update_traces(marker_line_color='#333333', marker_line_width=1)
+        fig6.update_layout(**LAYOUT)
         st.plotly_chart(fig6, use_container_width=True)
 
     with col2:
@@ -184,8 +233,12 @@ with tab2:
                       orientation='h',
                       labels={'cancel_rate':'Cancel Rate (%)','carrier_name':'Airline'},
                       title='Average Cancellation Rate by Airline',
-                      color='cancel_rate', color_continuous_scale='reds')
-        fig7.update_layout(paper_bgcolor='white', plot_bgcolor='white')
+                      color='cancel_rate',
+                      color_continuous_scale=[
+                          [0,'#378ADD'],[0.5,'#BA7517'],[1,'#D85A30']
+                      ])
+        fig7.update_traces(marker_line_color='#333333', marker_line_width=1)
+        fig7.update_layout(**LAYOUT)
         st.plotly_chart(fig7, use_container_width=True)
 
     st.subheader("Top 5 Airlines — Delay Rate Over Years")
@@ -202,8 +255,9 @@ with tab2:
                    color='carrier_name', markers=True,
                    labels={'delay_rate':'Delay Rate (%)','year':'Year','carrier_name':'Airline'},
                    title='Delay Rate Over Time — Top 5 Airlines',
-                   color_discrete_sequence=['#1D9E75','#BA7517','#378ADD','#D85A30','#888780'])
-    fig8.update_layout(paper_bgcolor='white', plot_bgcolor='white')
+                   color_discrete_sequence=COLORS)
+    fig8.update_traces(line_width=2)
+    fig8.update_layout(**LAYOUT)
     st.plotly_chart(fig8, use_container_width=True)
 
     st.subheader("Flight Volume by Airline")
@@ -216,8 +270,9 @@ with tab2:
                   orientation='h',
                   labels={'arr_flights':'Total Flights','carrier_name':'Airline'},
                   title='Total Flights by Airline',
-                  color_discrete_sequence=['#378ADD'])
-    fig9.update_layout(paper_bgcolor='white', plot_bgcolor='white')
+                  color_discrete_sequence=[BLUE])
+    fig9.update_traces(marker_line_color='#333333', marker_line_width=1)
+    fig9.update_layout(**LAYOUT)
     st.plotly_chart(fig9, use_container_width=True)
 
 # ============================================================
@@ -231,7 +286,13 @@ with tab3:
         cause_totals = filtered[cause_cols].sum().values
         fig10 = px.pie(names=cause_labels, values=cause_totals,
                        title='Total Delay Minutes by Cause',
-                       color_discrete_sequence=['#1D9E75','#BA7517','#378ADD','#D85A30','#888780'])
+                       color_discrete_sequence=COLORS,
+                       hole=0.3)
+        fig10.update_traces(
+            textfont=dict(color='#1a1a1a', size=13),
+            textinfo='percent+label'
+        )
+        fig10.update_layout(**LAYOUT)
         st.plotly_chart(fig10, use_container_width=True)
 
     with col2:
@@ -240,8 +301,9 @@ with tab3:
         season_cause.columns = ['season'] + cause_labels
         fig11 = px.bar(season_cause, x='season', y=cause_labels,
                        title='Delay Minutes by Cause and Season',
-                       color_discrete_sequence=['#1D9E75','#BA7517','#378ADD','#D85A30','#888780'])
-        fig11.update_layout(paper_bgcolor='white', plot_bgcolor='white')
+                       color_discrete_sequence=COLORS)
+        fig11.update_traces(marker_line_color='#333333', marker_line_width=0.5)
+        fig11.update_layout(**LAYOUT)
         st.plotly_chart(fig11, use_container_width=True)
 
     st.subheader("Delay Causes Over Time")
@@ -249,8 +311,8 @@ with tab3:
     yearly_causes.columns = ['year'] + cause_labels
     fig12 = px.area(yearly_causes, x='year', y=cause_labels,
                     title='Delay Minutes by Cause Over Time',
-                    color_discrete_sequence=['#1D9E75','#BA7517','#378ADD','#D85A30','#888780'])
-    fig12.update_layout(paper_bgcolor='white', plot_bgcolor='white')
+                    color_discrete_sequence=COLORS)
+    fig12.update_layout(**LAYOUT)
     st.plotly_chart(fig12, use_container_width=True)
 
     st.subheader("Delay Cause Breakdown by Airline")
@@ -258,9 +320,9 @@ with tab3:
     airline_cause.columns = ['Airline'] + cause_labels
     fig13 = px.bar(airline_cause, x='Airline', y=cause_labels,
                    title='Delay Minutes by Cause per Airline',
-                   color_discrete_sequence=['#1D9E75','#BA7517','#378ADD','#D85A30','#888780'])
-    fig13.update_layout(paper_bgcolor='white', plot_bgcolor='white',
-                        xaxis_tickangle=-45)
+                   color_discrete_sequence=COLORS)
+    fig13.update_traces(marker_line_color='#333333', marker_line_width=0.5)
+    fig13.update_layout(**LAYOUT, xaxis_tickangle=-45)
     st.plotly_chart(fig13, use_container_width=True)
 
 # ============================================================
