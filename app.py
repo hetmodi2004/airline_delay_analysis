@@ -1,13 +1,17 @@
 import streamlit as st
 import pandas as pd
+import gdown
+import os
 
 st.title("✈️ Airline Delay Dashboard")
 
-# Load data from Google Drive
+# Download from Google Drive
 file_id = "1IW3_dV5TDVFWZfSenpJob0015Va38iJ3"
-url = f"https://drive.google.com/uc?export=download&id={file_id}"
 
-df = pd.read_csv(url)
+if not os.path.exists("Airline_Delay_Cause.csv"):
+    gdown.download(f"https://drive.google.com/uc?id={file_id}", "Airline_Delay_Cause.csv", quiet=False, fuzzy=True)
+
+df = pd.read_csv("Airline_Delay_Cause.csv")
 df = df.dropna(subset=['arr_flights'])
 
 st.write("Data loaded successfully!")
