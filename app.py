@@ -10,10 +10,11 @@ st.set_page_config(page_title="Airline Delay Dashboard", page_icon="✈️", lay
 @st.cache_data
 def load_data():
     file_id = "1IW3_dV5TDVFWZfSenpJob0015Va38iJ3"
-    if not os.path.exists("Airline_Delay_Cause.csv"):
-        gdown.download(f"https://drive.google.com/uc?id={file_id}",
-                       "Airline_Delay_Cause.csv", quiet=False, fuzzy=True)
-    df = pd.read_csv("Airline_Delay_Cause.csv")
+    output = "Airline_Delay_Cause.csv"
+    if not os.path.exists(output):
+        url = f"https://drive.google.com/uc?id={file_id}&export=download&confirm=t"
+        gdown.download(url, output, quiet=False)
+    df = pd.read_csv(output)
     df = df.dropna(subset=['arr_flights'])
     df['delay_rate'] = df['arr_del15'] / df['arr_flights'] * 100
     return df
