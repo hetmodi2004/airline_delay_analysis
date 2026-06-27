@@ -3,7 +3,11 @@ import pandas as pd
 
 st.title("✈️ Airline Delay Dashboard")
 
-df = pd.read_csv('Airline_Delay_Cause.csv')
+# Load data from Google Drive
+file_id = "1IW3_dV5TDVFWZfSenpJob0015Va38iJ3"
+url = f"https://drive.google.com/uc?export=download&id={file_id}"
+
+df = pd.read_csv(url)
 df = df.dropna(subset=['arr_flights'])
 
 st.write("Data loaded successfully!")
