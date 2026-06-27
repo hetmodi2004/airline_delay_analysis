@@ -22,9 +22,8 @@ airline_delay_analysis/
 - 🏢 By Airline — delay rates, cancellations, flight volumes per airline
 - 🌦️ Delay Causes — breakdown by cause over time and by season
 - 🏆 Rankings — best and worst airlines and airports
-- 📅 Year Comparison — compare any two years side by side
 - 🔧 Sidebar filters — filter by year range, airline, and season
-
+- 
 ## Live Dashboard
 👉 https://your-app-url.streamlit.app
 
