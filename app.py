@@ -84,12 +84,11 @@ st.divider()
 # ============================================================
 # TABS
 # ============================================================
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
+tab1, tab2, tab3, tab4 = st.tabs([
     "📈 Overview",
     "🏢 By Airline",
     "🌦️ Delay Causes",
     "🏆 Rankings",
-    "📅 Year Comparison"
 ])
 
 # ============================================================
@@ -327,62 +326,5 @@ with tab4:
         worst_airport.columns = ['Airport','Avg Delay Rate (%)','Total Flights']
         worst_airport['Avg Delay Rate (%)'] = worst_airport['Avg Delay Rate (%)'].round(2)
         st.dataframe(worst_airport, use_container_width=True, hide_index=True)
-
-# ============================================================
-# TAB 5 — YEAR COMPARISON
-# ============================================================
-with tab5:
-    st.subheader("📅 Compare Two Years")
-
-    col1, col2 = st.columns(2)
-    with col1:
-        year1 = st.selectbox("Select Year 1", sorted(df['year'].unique()), index=0)
-    with col2:
-        year2 = st.selectbox("Select Year 2", sorted(df['year'].unique()), index=5)
-
-    y1 = filtered[filtered['year'] == year1]
-    y2 = filtered[filtered['year'] == year2]
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.markdown(f"### 📊 {year1}")
-        st.metric("Avg Delay Rate", f"{y1['delay_rate'].mean():.1f}%")
-        st.metric("Total Flights",  f"{y1['arr_flights'].sum():,.0f}")
-        st.metric("Total Delayed",  f"{y1['arr_del15'].sum():,.0f}")
-
-    with col2:
-        st.markdown(f"### 📊 {year2}")
-        st.metric("Avg Delay Rate", f"{y2['delay_rate'].mean():.1f}%")
-        st.metric("Total Flights",  f"{y2['arr_flights'].sum():,.0f}")
-        st.metric("Total Delayed",  f"{y2['arr_del15'].sum():,.0f}")
-
-    st.subheader("Delay Cause Comparison")
-    compare = pd.DataFrame({
-        'Cause': cause_labels,
-        str(year1): y1[cause_cols].sum().values,
-        str(year2): y2[cause_cols].sum().values
-    })
-    fig14 = px.bar(compare, x='Cause', y=[str(year1), str(year2)],
-                   barmode='group',
-                   title=f'Delay Causes: {year1} vs {year2}',
-                   color_discrete_sequence=['#1D9E75','#D85A30'])
-    fig14.update_layout(paper_bgcolor='white', plot_bgcolor='white')
-    st.plotly_chart(fig14, use_container_width=True)
-
-    st.subheader("Airline Delay Rate Comparison")
-    compare_airline = pd.merge(
-        y1.groupby('carrier_name')['delay_rate'].mean().reset_index().rename(columns={'delay_rate': str(year1)}),
-        y2.groupby('carrier_name')['delay_rate'].mean().reset_index().rename(columns={'delay_rate': str(year2)}),
-        on='carrier_name'
-    )
-    fig15 = px.scatter(compare_airline, x=str(year1), y=str(year2),
-                       text='carrier_name',
-                       title=f'Airline Delay Rate: {year1} vs {year2}',
-                       color_discrete_sequence=['#378ADD'])
-    fig15.update_traces(textposition='top center')
-    fig15.update_layout(paper_bgcolor='white', plot_bgcolor='white')
-    st.plotly_chart(fig15, use_container_width=True)
-
 st.divider()
 st.caption("Data source: Bureau of Transportation Statistics (BTS) | Dashboard by Streamlit")
