@@ -137,9 +137,107 @@ hr {{
     overflow: hidden;
 }}
 
-/* Sidebar widgets */
+/* ---------------- Sidebar widget theming ---------------- */
 [data-testid="stSidebar"] .stSlider, [data-testid="stSidebar"] .stMultiSelect {{
     padding-bottom: 6px;
+}}
+
+/* Sidebar labels */
+[data-testid="stSidebar"] label, [data-testid="stSidebar"] p {{
+    color: {SUBTEXT} !important;
+}}
+
+/* Slider track + thumb */
+[data-testid="stSidebar"] div[data-baseweb="slider"] > div > div:nth-child(1) {{
+    background: {GRID} !important;
+}}
+[data-testid="stSidebar"] div[data-baseweb="slider"] > div > div:nth-child(2) {{
+    background: linear-gradient(90deg, {TEAL}, {BLUE}) !important;
+}}
+[data-testid="stSidebar"] div[role="slider"] {{
+    background-color: {TEAL} !important;
+    border: 2px solid {TEXT} !important;
+    box-shadow: 0 0 8px rgba(29,158,117,0.6) !important;
+}}
+[data-testid="stSidebar"] div[data-testid="stTickBar"] {{
+    color: {SUBTEXT} !important;
+}}
+[data-testid="stSidebar"] div[data-baseweb="slider"] div[data-testid="stThumbValue"] {{
+    color: {TEAL} !important;
+    background-color: {CARD_BG} !important;
+    border: 1px solid {TEAL} !important;
+}}
+[data-testid="stSidebar"] div[data-baseweb="slider"] * {{
+    color: {TEXT} !important;
+}}
+
+/* Multiselect box */
+[data-testid="stSidebar"] div[data-baseweb="select"] > div {{
+    background-color: {CARD_BG} !important;
+    border: 1px solid {GRID} !important;
+    border-radius: 8px !important;
+}}
+[data-testid="stSidebar"] div[data-baseweb="select"] > div:hover {{
+    border-color: {TEAL} !important;
+}}
+[data-testid="stSidebar"] div[data-baseweb="select"] svg {{
+    fill: {SUBTEXT} !important;
+}}
+
+/* Multiselect selected chips — cycle through palette colors */
+[data-testid="stSidebar"] span[data-baseweb="tag"] {{
+    background-color: rgba(29,158,117,0.18) !important;
+    border: 1px solid {TEAL} !important;
+    color: {TEXT} !important;
+    border-radius: 6px !important;
+}}
+[data-testid="stSidebar"] span[data-baseweb="tag"]:nth-of-type(2n) {{
+    background-color: rgba(55,138,221,0.18) !important;
+    border: 1px solid {BLUE} !important;
+}}
+[data-testid="stSidebar"] span[data-baseweb="tag"]:nth-of-type(3n) {{
+    background-color: rgba(186,117,23,0.20) !important;
+    border: 1px solid {AMBER} !important;
+}}
+[data-testid="stSidebar"] span[data-baseweb="tag"]:nth-of-type(4n) {{
+    background-color: rgba(216,90,48,0.18) !important;
+    border: 1px solid {CORAL} !important;
+}}
+[data-testid="stSidebar"] span[data-baseweb="tag"] svg {{
+    fill: {TEXT} !important;
+}}
+
+/* Dropdown menu when open */
+div[data-baseweb="popover"] ul[role="listbox"] {{
+    background-color: {CARD_BG} !important;
+    border: 1px solid {GRID} !important;
+}}
+div[data-baseweb="popover"] li[role="option"] {{
+    color: {TEXT} !important;
+}}
+div[data-baseweb="popover"] li[role="option"]:hover {{
+    background-color: rgba(29,158,117,0.15) !important;
+}}
+
+/* Kill default Streamlit pink/red accent color everywhere in sidebar */
+[data-testid="stSidebar"] * {{
+    accent-color: {TEAL} !important;
+}}
+[data-testid="stSidebar"] [style*="rgb(255, 75, 75)"],
+[data-testid="stSidebar"] [style*="rgb(255,75,75)"] {{
+    background-color: {TEAL} !important;
+    border-color: {TEAL} !important;
+    color: {TEAL} !important;
+}}
+
+/* Sidebar dividers */
+[data-testid="stSidebar"] hr {{
+    border-color: {GRID} !important;
+}}
+
+/* Sidebar caption text */
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {{
+    color: {SUBTEXT} !important;
 }}
 </style>
 """, unsafe_allow_html=True)
