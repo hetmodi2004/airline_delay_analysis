@@ -3,50 +3,108 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-st.set_page_config(page_title="Airline Delay Dashboard", page_icon="✈️", layout="wide")
+st.set_page_config(page_title="FLIGHT DELAY CONTROL", page_icon="\u2708\ufe0f", layout="wide")
 
-st.markdown("""
-    <style>
-    .main { background-color: white; }
-    div[data-testid="stMetric"] {
-        background-color: #FAFAF7;
-        border: 1px solid #EDEBE3;
-        border-radius: 8px;
-        padding: 12px 10px;
-    }
-    div[data-testid="stMetricLabel"] { color: #888780; }
-    div[data-testid="stMetricValue"] { color: #2C2C2A; }
-    </style>
+# ============================================================
+# DESIGN TOKENS — "Control Tower" identity
+# Dark navy ops-room background, amber/teal signal colors
+# (the same palette a radar screen or split-flap board would
+# use), monospace display type for numbers so it reads like
+# real terminal data rather than a generic light dashboard.
+# ============================================================
+INK      = '#0B1220'
+PANEL    = '#111B2E'
+LINE     = '#233250'
+TEXT     = '#E7ECF5'
+SUBTEXT  = '#8593AD'
+AMBER    = '#FFB020'
+TEAL     = '#37D6C4'
+CORAL    = '#FF5D5D'
+BLUE     = '#4C8DFF'
+VIOLET   = '#9B7BFF'
+SEQ = [AMBER, TEAL, BLUE, CORAL, VIOLET]
+
+DISPLAY_FONT = "'JetBrains Mono', 'IBM Plex Mono', monospace"
+BODY_FONT = "'Inter', -apple-system, sans-serif"
+
+st.markdown(f"""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+.stApp {{ background: {INK}; color: {TEXT}; font-family: {BODY_FONT}; }}
+#MainMenu, footer, header {{ visibility: hidden; }}
+.block-container {{ padding-top: 1.5rem; max-width: 1400px; }}
+
+.tower-title {{
+    font-family: {DISPLAY_FONT}; font-weight: 800; font-size: 2.1rem;
+    letter-spacing: 0.04em; color: {TEXT}; margin: 0;
+}}
+.tower-title span {{ color: {AMBER}; }}
+.tower-sub {{
+    font-family: {DISPLAY_FONT}; font-size: 0.78rem; color: {SUBTEXT};
+    letter-spacing: 0.12em; text-transform: uppercase;
+}}
+.tower-clock {{
+    font-family: {DISPLAY_FONT}; color: {TEAL}; font-size: 0.85rem;
+    letter-spacing: 0.08em; text-align: right;
+}}
+
+div[data-testid="stMetric"] {{
+    background: {PANEL}; border: 1px solid {LINE}; border-left: 3px solid {AMBER};
+    border-radius: 4px; padding: 14px 16px 10px 16px;
+}}
+div[data-testid="stMetricLabel"] {{
+    font-family: {DISPLAY_FONT}; font-size: 0.68rem !important; letter-spacing: 0.1em;
+    text-transform: uppercase; color: {SUBTEXT} !important;
+}}
+div[data-testid="stMetricValue"] {{
+    font-family: {DISPLAY_FONT} !important; color: {TEXT} !important; font-weight: 700 !important;
+}}
+
+section[data-testid="stSidebar"] {{ background: {PANEL}; border-right: 1px solid {LINE}; }}
+section[data-testid="stSidebar"] .stMarkdown, section[data-testid="stSidebar"] label {{
+    color: {SUBTEXT} !important; font-family: {DISPLAY_FONT}; font-size: 0.75rem;
+    letter-spacing: 0.06em; text-transform: uppercase;
+}}
+
+button[data-baseweb="tab"] {{
+    font-family: {DISPLAY_FONT}; letter-spacing: 0.08em; text-transform: uppercase;
+    font-size: 0.8rem; color: {SUBTEXT};
+}}
+button[data-baseweb="tab"][aria-selected="true"] {{ color: {AMBER} !important; }}
+div[data-baseweb="tab-highlight"] {{ background-color: {AMBER} !important; }}
+div[data-baseweb="tab-border"] {{ background-color: {LINE} !important; }}
+
+.panel-label {{
+    font-family: {DISPLAY_FONT}; font-size: 0.72rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: {AMBER}; border-bottom: 1px solid {LINE};
+    padding-bottom: 6px; margin-bottom: 4px; margin-top: 6px;
+}}
+div[data-testid="stDataFrame"] {{ font-family: {DISPLAY_FONT}; }}
+hr {{ border-color: {LINE}; }}
+</style>
 """, unsafe_allow_html=True)
 
-TEAL  = '#1D9E75'
-AMBER = '#BA7517'
-BLUE  = '#378ADD'
-CORAL = '#D85A30'
-GREY  = '#888780'
-COLORS = [TEAL, AMBER, BLUE, CORAL, GREY]
 
-def apply_layout(fig):
-    """Shared layout template — mirrors the notebook: clean white background,
-    no gridlines, muted grey axis lines, generous margins."""
+def apply_layout(fig, h=None):
+    """Console-style chart chrome: transparent panel, amber/teal signal colors,
+    hairline gridlines only on the axis that carries the comparison."""
     fig.update_layout(
-        paper_bgcolor='white',
-        plot_bgcolor='white',
-        font=dict(family='Arial, sans-serif', color='#2C2C2A', size=13),
-        title_font=dict(size=16, color='#2C2C2A'),
-        legend=dict(font=dict(color='#2C2C2A', size=12),
-                    bgcolor='white', borderwidth=0),
-        margin=dict(t=60, b=50, l=60, r=30)
+        paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(family=BODY_FONT, color=TEXT, size=12),
+        title=dict(font=dict(family=DISPLAY_FONT, size=14, color=TEXT), x=0, xanchor='left'),
+        legend=dict(font=dict(color=SUBTEXT, size=11), bgcolor='rgba(0,0,0,0)',
+                    orientation='h', y=-0.18),
+        margin=dict(t=50, b=40, l=50, r=20), height=h,
     )
-    fig.update_xaxes(tickfont=dict(color='#2C2C2A', size=12),
-                     title_font=dict(color='#2C2C2A', size=13),
-                     showgrid=False, linecolor='#888780', linewidth=1,
-                     ticks='outside', tickcolor='#888780')
-    fig.update_yaxes(tickfont=dict(color='#2C2C2A', size=12),
-                     title_font=dict(color='#2C2C2A', size=13),
-                     showgrid=True, gridcolor='#EDEBE3', gridwidth=1,
-                     linecolor='#888780', linewidth=1, zeroline=False)
+    fig.update_xaxes(tickfont=dict(color=SUBTEXT, size=11), showgrid=False,
+                     linecolor=LINE, linewidth=1, ticks='outside', tickcolor=LINE,
+                     title_font=dict(color=SUBTEXT, size=11))
+    fig.update_yaxes(tickfont=dict(color=SUBTEXT, size=11), showgrid=True,
+                     gridcolor=LINE, gridwidth=1, zeroline=False,
+                     linecolor=LINE, linewidth=1, title_font=dict(color=SUBTEXT, size=11))
     return fig
+
 
 @st.cache_data
 def load_data():
@@ -58,33 +116,51 @@ def load_data():
                               df['nas_delay'] + df['security_delay'] +
                               df['late_aircraft_delay'])
     df['season'] = df['month'].map({
-        12:'Winter',1:'Winter',2:'Winter',
-        3:'Spring', 4:'Spring',5:'Spring',
-        6:'Summer', 7:'Summer',8:'Summer',
-        9:'Fall',  10:'Fall', 11:'Fall'
+        12: 'Winter', 1: 'Winter', 2: 'Winter',
+        3: 'Spring', 4: 'Spring', 5: 'Spring',
+        6: 'Summer', 7: 'Summer', 8: 'Summer',
+        9: 'Fall', 10: 'Fall', 11: 'Fall'
     })
     return df
 
+
 df = load_data()
 
-st.sidebar.title("🔧 Filters")
+# ============================================================
+# MASTHEAD
+# ============================================================
+h1, h2 = st.columns([3, 1])
+with h1:
+    st.markdown(f"""
+        <p class="tower-sub">Bureau of Transportation Statistics &middot; 2003&ndash;2025</p>
+        <h1 class="tower-title">FLIGHT<span>DELAY</span>CONTROL</h1>
+    """, unsafe_allow_html=True)
+with h2:
+    st.markdown(f"""
+        <div class="tower-clock">LIVE FEED<br>398,234 RECORDS<br>51 CARRIERS &middot; 425 AIRPORTS</div>
+    """, unsafe_allow_html=True)
+
+# ============================================================
+# SIDEBAR — OPS PANEL
+# ============================================================
+st.sidebar.markdown("### \u2708\ufe0f OPS PANEL")
+st.sidebar.markdown("**YEAR RANGE**")
 year_range = st.sidebar.slider(
-    "Year Range",
-    int(df['year'].min()),
-    int(df['year'].max()),
-    (2015, int(df['year'].max()))
+    "Year Range", int(df['year'].min()), int(df['year'].max()),
+    (2015, int(df['year'].max())), label_visibility="collapsed"
 )
+
+st.sidebar.markdown("**CARRIERS**")
 all_airlines = sorted(df['carrier_name'].unique())
-top6_by_volume = (
-    df.groupby('carrier_name')['arr_flights'].sum()
-    .nlargest(6).index.tolist()
-)
+top6_by_volume = df.groupby('carrier_name')['arr_flights'].sum().nlargest(6).index.tolist()
 selected_airlines = st.sidebar.multiselect(
-    "Select Airlines", all_airlines, default=top6_by_volume
+    "Select Airlines", all_airlines, default=top6_by_volume, label_visibility="collapsed"
 )
-all_seasons = ['Winter','Spring','Summer','Fall']
+
+st.sidebar.markdown("**SEASON**")
+all_seasons = ['Winter', 'Spring', 'Summer', 'Fall']
 selected_seasons = st.sidebar.multiselect(
-    "Select Seasons", all_seasons, default=all_seasons
+    "Select Seasons", all_seasons, default=all_seasons, label_visibility="collapsed"
 )
 
 filtered = df[
@@ -94,289 +170,183 @@ filtered = df[
     (df['season'].isin(selected_seasons))
 ]
 
-cause_cols   = ['carrier_delay','weather_delay','nas_delay','security_delay','late_aircraft_delay']
-cause_labels = ['Carrier','Weather','NAS','Security','Late Aircraft']
+cause_cols = ['carrier_delay', 'weather_delay', 'nas_delay', 'security_delay', 'late_aircraft_delay']
+cause_labels = ['Carrier', 'Weather', 'NAS', 'Security', 'Late Aircraft']
 
-st.title("✈️ Airline Delay Analysis Dashboard")
-st.markdown("Exploring why flights get delayed across US airports from 2003–2025")
+st.markdown("<hr>", unsafe_allow_html=True)
 
-col1, col2, col3, col4, col5 = st.columns(5)
-col1.metric("Total Flights",   f"{filtered['arr_flights'].sum():,.0f}")
-col2.metric("Total Delayed",   f"{filtered['arr_del15'].sum():,.0f}")
-col3.metric("Total Cancelled", f"{filtered['arr_cancelled'].sum():,.0f}")
-col4.metric("Avg Delay Rate",  f"{filtered['delay_rate'].mean():.1f}%")
-col5.metric("Avg Cancel Rate", f"{filtered['cancel_rate'].mean():.1f}%")
+# ============================================================
+# METRIC STRIP
+# ============================================================
+c1, c2, c3, c4, c5 = st.columns(5)
+c1.metric("TOTAL FLIGHTS", f"{filtered['arr_flights'].sum():,.0f}")
+c2.metric("DELAYED", f"{filtered['arr_del15'].sum():,.0f}")
+c3.metric("CANCELLED", f"{filtered['arr_cancelled'].sum():,.0f}")
+c4.metric("AVG DELAY RATE", f"{filtered['delay_rate'].mean():.1f}%")
+c5.metric("AVG CANCEL RATE", f"{filtered['cancel_rate'].mean():.1f}%")
 
-st.divider()
+st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
-tab1, tab2, tab3, tab4 = st.tabs([
-    "📈 Overview",
-    "🏢 By Airline",
-    "🌦️ Delay Causes",
-    "🏆 Rankings"
-])
+tab1, tab2, tab3, tab4 = st.tabs(["OVERVIEW", "BY CARRIER", "DELAY CAUSES", "RANKINGS"])
 
 # ============================================================
 # TAB 1 — OVERVIEW
 # ============================================================
 with tab1:
     col1, col2 = st.columns(2)
-
     with col1:
-        st.subheader("Delay Rate Over Time")
+        st.markdown('<p class="panel-label">Delay Rate &middot; Year over Year</p>', unsafe_allow_html=True)
         yearly = filtered.groupby('year')['delay_rate'].mean().reset_index()
         fig1 = px.line(yearly, x='year', y='delay_rate', markers=True,
-                       labels={'delay_rate':'Delay Rate (%)','year':'Year'},
-                       title='Average Delay Rate by Year')
-        fig1.update_traces(line_color=TEAL, line_width=3,
-                           marker=dict(size=8, color=TEAL))
-        fig1 = apply_layout(fig1)
-        st.plotly_chart(fig1, use_container_width=True)
+                       labels={'delay_rate': 'Delay Rate (%)', 'year': ''})
+        fig1.update_traces(line_color=AMBER, line_width=2.5,
+                           marker=dict(size=6, color=AMBER, line=dict(width=0)))
+        st.plotly_chart(apply_layout(fig1, 320), use_container_width=True)
 
     with col2:
-        st.subheader("Delay Rate by Season")
-        seasonal = filtered.groupby('season')['delay_rate'].mean().reset_index()
-        fig2 = px.bar(seasonal, x='season', y='delay_rate', color='season',
-                      color_discrete_map={
-                          'Winter':BLUE,'Spring':TEAL,
-                          'Summer':AMBER,'Fall':CORAL
-                      },
-                      labels={'delay_rate':'Delay Rate (%)','season':'Season'},
-                      title='Average Delay Rate by Season')
-        fig2.update_traces(marker_line_color='#333333', marker_line_width=1)
-        fig2 = apply_layout(fig2)
-        fig2.update_layout(showlegend=False)
-        st.plotly_chart(fig2, use_container_width=True)
+        st.markdown('<p class="panel-label">Delay Rate &middot; By Season</p>', unsafe_allow_html=True)
+        seasonal = filtered.groupby('season')['delay_rate'].mean().reindex(all_seasons).reset_index()
+        fig2 = px.bar(seasonal, x='season', y='delay_rate',
+                      labels={'delay_rate': 'Delay Rate (%)', 'season': ''},
+                      color_discrete_sequence=[TEAL])
+        fig2.update_traces(marker_line_width=0)
+        st.plotly_chart(apply_layout(fig2, 320), use_container_width=True)
 
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.subheader("Monthly Delay Trend")
+    col3, col4 = st.columns(2)
+    with col3:
+        st.markdown('<p class="panel-label">Monthly Delay Pattern</p>', unsafe_allow_html=True)
         monthly = filtered.groupby('month')['delay_rate'].mean().reset_index()
-        monthly['month_name'] = monthly['month'].map({
-            1:'Jan',2:'Feb',3:'Mar',4:'Apr',5:'May',6:'Jun',
-            7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec'
-        })
-        fig3 = px.line(monthly, x='month_name', y='delay_rate', markers=True,
-                       labels={'delay_rate':'Delay Rate (%)','month_name':'Month'},
-                       title='Average Delay Rate by Month')
-        fig3.update_traces(line_color=AMBER, line_width=3,
-                           marker=dict(size=8, color=AMBER))
-        fig3 = apply_layout(fig3)
-        st.plotly_chart(fig3, use_container_width=True)
+        monthly['month_name'] = monthly['month'].map({1:'Jan',2:'Feb',3:'Mar',4:'Apr',5:'May',6:'Jun',
+                                                        7:'Jul',8:'Aug',9:'Sep',10:'Oct',11:'Nov',12:'Dec'})
+        fig3 = px.area(monthly, x='month_name', y='delay_rate',
+                       labels={'delay_rate': 'Delay Rate (%)', 'month_name': ''},
+                       color_discrete_sequence=[BLUE])
+        fig3.update_traces(line_width=2)
+        st.plotly_chart(apply_layout(fig3, 300), use_container_width=True)
 
-    with col2:
-        st.subheader("Cancellation Rate Over Time")
-        yearly_cancel = filtered.groupby('year')['cancel_rate'].mean().reset_index()
-        fig4 = px.bar(yearly_cancel, x='year', y='cancel_rate',
-                      labels={'cancel_rate':'Cancel Rate (%)','year':'Year'},
-                      title='Average Cancellation Rate by Year',
-                      color_discrete_sequence=[CORAL])
-        fig4.update_traces(marker_line_color='#333333', marker_line_width=1)
-        fig4 = apply_layout(fig4)
-        st.plotly_chart(fig4, use_container_width=True)
-
-    st.subheader("Total Delay Minutes Over Time")
-    yearly_delay = filtered.groupby('year')['total_delay_min'].sum().reset_index()
-    fig5 = px.area(yearly_delay, x='year', y='total_delay_min',
-                   labels={'total_delay_min':'Total Delay Minutes','year':'Year'},
-                   title='Total Delay Minutes by Year',
-                   color_discrete_sequence=[BLUE])
-    fig5 = apply_layout(fig5)
-    st.plotly_chart(fig5, use_container_width=True)
+    with col4:
+        st.markdown('<p class="panel-label">Total Delay Minutes &middot; Year over Year</p>', unsafe_allow_html=True)
+        yearly_delay = filtered.groupby('year')['total_delay_min'].sum().reset_index()
+        fig5 = px.bar(yearly_delay, x='year', y='total_delay_min',
+                      labels={'total_delay_min': 'Delay Minutes', 'year': ''},
+                      color_discrete_sequence=[VIOLET])
+        fig5.update_traces(marker_line_width=0)
+        st.plotly_chart(apply_layout(fig5, 300), use_container_width=True)
 
 # ============================================================
-# TAB 2 — BY AIRLINE
+# TAB 2 — BY CARRIER
 # ============================================================
 with tab2:
     col1, col2 = st.columns(2)
-
     with col1:
-        st.subheader("Delay Rate by Airline")
-        airline_delay = (
-            filtered.groupby('carrier_name')['delay_rate']
-            .mean().reset_index()
-            .sort_values('delay_rate', ascending=True)
-        )
-        fig6 = px.bar(airline_delay, x='delay_rate', y='carrier_name',
-                      orientation='h',
-                      labels={'delay_rate':'Delay Rate (%)','carrier_name':'Airline'},
-                      title='Average Delay Rate by Airline',
+        st.markdown('<p class="panel-label">Delay Rate &middot; By Carrier</p>', unsafe_allow_html=True)
+        airline_delay = (filtered.groupby('carrier_name')['delay_rate'].mean()
+                         .reset_index().sort_values('delay_rate'))
+        fig6 = px.bar(airline_delay, x='delay_rate', y='carrier_name', orientation='h',
+                      labels={'delay_rate': 'Delay Rate (%)', 'carrier_name': ''},
                       color='delay_rate',
-                      color_continuous_scale=[
-                          [0,'#1D9E75'],[0.5,'#BA7517'],[1,'#D85A30']
-                      ])
-        fig6.update_traces(marker_line_color='#333333', marker_line_width=1)
-        fig6 = apply_layout(fig6)
-        st.plotly_chart(fig6, use_container_width=True)
+                      color_continuous_scale=[[0, TEAL], [0.5, AMBER], [1, CORAL]])
+        fig6.update_traces(marker_line_width=0)
+        fig6.update_layout(coloraxis_showscale=False)
+        st.plotly_chart(apply_layout(fig6, 380), use_container_width=True)
 
     with col2:
-        st.subheader("Cancellation Rate by Airline")
-        airline_cancel = (
-            filtered.groupby('carrier_name')['cancel_rate']
-            .mean().reset_index()
-            .sort_values('cancel_rate', ascending=True)
-        )
-        fig7 = px.bar(airline_cancel, x='cancel_rate', y='carrier_name',
-                      orientation='h',
-                      labels={'cancel_rate':'Cancel Rate (%)','carrier_name':'Airline'},
-                      title='Average Cancellation Rate by Airline',
-                      color='cancel_rate',
-                      color_continuous_scale=[
-                          [0,'#378ADD'],[0.5,'#BA7517'],[1,'#D85A30']
-                      ])
-        fig7.update_traces(marker_line_color='#333333', marker_line_width=1)
-        fig7 = apply_layout(fig7)
-        st.plotly_chart(fig7, use_container_width=True)
+        st.markdown('<p class="panel-label">Top Carriers &middot; Delay Rate Trend</p>', unsafe_allow_html=True)
+        top5 = filtered.groupby('carrier_name')['arr_flights'].sum().nlargest(5).index.tolist()
+        airline_yearly = (filtered[filtered['carrier_name'].isin(top5)]
+                          .groupby(['year', 'carrier_name'])['delay_rate'].mean().reset_index())
+        fig8 = px.line(airline_yearly, x='year', y='delay_rate', color='carrier_name', markers=True,
+                       labels={'delay_rate': 'Delay Rate (%)', 'year': '', 'carrier_name': ''},
+                       color_discrete_sequence=SEQ)
+        fig8.update_traces(line_width=2, marker=dict(size=5))
+        st.plotly_chart(apply_layout(fig8, 380), use_container_width=True)
 
-    st.subheader("Top 5 Airlines — Delay Rate Over Years")
-    top5 = (
-        filtered.groupby('carrier_name')['arr_flights']
-        .sum().nlargest(5).index.tolist()
-    )
-    airline_yearly = (
-        filtered[filtered['carrier_name'].isin(top5)]
-        .groupby(['year','carrier_name'])['delay_rate']
-        .mean().reset_index()
-    )
-    fig8 = px.line(airline_yearly, x='year', y='delay_rate',
-                   color='carrier_name', markers=True,
-                   labels={'delay_rate':'Delay Rate (%)','year':'Year','carrier_name':'Airline'},
-                   title='Delay Rate Over Time — Top 5 Airlines',
-                   color_discrete_sequence=COLORS)
-    fig8.update_traces(line_width=2)
-    fig8 = apply_layout(fig8)
-    st.plotly_chart(fig8, use_container_width=True)
-
-    st.subheader("Flight Volume by Airline")
-    airline_vol = (
-        filtered.groupby('carrier_name')['arr_flights']
-        .sum().reset_index()
-        .sort_values('arr_flights', ascending=True)
-    )
-    fig9 = px.bar(airline_vol, x='arr_flights', y='carrier_name',
-                  orientation='h',
-                  labels={'arr_flights':'Total Flights','carrier_name':'Airline'},
-                  title='Total Flights by Airline',
+    st.markdown('<p class="panel-label">Flight Volume &middot; By Carrier</p>', unsafe_allow_html=True)
+    airline_vol = (filtered.groupby('carrier_name')['arr_flights'].sum()
+                  .reset_index().sort_values('arr_flights'))
+    fig9 = px.bar(airline_vol, x='arr_flights', y='carrier_name', orientation='h',
+                  labels={'arr_flights': 'Total Flights', 'carrier_name': ''},
                   color_discrete_sequence=[BLUE])
-    fig9.update_traces(marker_line_color='#333333', marker_line_width=1)
-    fig9 = apply_layout(fig9)
-    st.plotly_chart(fig9, use_container_width=True)
+    fig9.update_traces(marker_line_width=0)
+    st.plotly_chart(apply_layout(fig9, 340), use_container_width=True)
 
 # ============================================================
 # TAB 3 — DELAY CAUSES
 # ============================================================
 with tab3:
     col1, col2 = st.columns(2)
-
     with col1:
-        st.subheader("Delay Minutes by Cause")
+        st.markdown('<p class="panel-label">Delay Minutes &middot; By Cause</p>', unsafe_allow_html=True)
         cause_totals = filtered[cause_cols].sum().values
-        fig10 = px.pie(names=cause_labels, values=cause_totals,
-                       title='Total Delay Minutes by Cause',
-                       color_discrete_sequence=COLORS,
-                       hole=0.3)
-        fig10.update_traces(
-            textfont=dict(color='#1a1a1a', size=13),
-            textinfo='percent+label'
-        )
-        fig10 = apply_layout(fig10)
-        st.plotly_chart(fig10, use_container_width=True)
+        fig10 = px.pie(names=cause_labels, values=cause_totals, hole=0.62,
+                       color_discrete_sequence=SEQ)
+        fig10.update_traces(textfont=dict(color=TEXT, family=DISPLAY_FONT, size=12),
+                            textinfo='percent', marker=dict(line=dict(color=INK, width=2)))
+        st.plotly_chart(apply_layout(fig10, 360), use_container_width=True)
 
     with col2:
-        st.subheader("Delay Causes by Season")
-        season_cause = filtered.groupby('season')[cause_cols].sum().reset_index()
+        st.markdown('<p class="panel-label">Delay Causes &middot; By Season</p>', unsafe_allow_html=True)
+        season_cause = filtered.groupby('season')[cause_cols].sum().reindex(all_seasons).reset_index()
         season_cause.columns = ['season'] + cause_labels
         fig11 = px.bar(season_cause, x='season', y=cause_labels,
-                       title='Delay Minutes by Cause and Season',
-                       color_discrete_sequence=COLORS)
-        fig11.update_traces(marker_line_color='#333333', marker_line_width=0.5)
-        fig11 = apply_layout(fig11)
-        st.plotly_chart(fig11, use_container_width=True)
+                       labels={'value': 'Delay Minutes', 'season': ''},
+                       color_discrete_sequence=SEQ)
+        fig11.update_traces(marker_line_width=0)
+        st.plotly_chart(apply_layout(fig11, 360), use_container_width=True)
 
-    st.subheader("Delay Causes Over Time")
+    st.markdown('<p class="panel-label">Delay Causes &middot; Year over Year</p>', unsafe_allow_html=True)
     yearly_causes = filtered.groupby('year')[cause_cols].sum().reset_index()
     yearly_causes.columns = ['year'] + cause_labels
     fig12 = px.area(yearly_causes, x='year', y=cause_labels,
-                    title='Delay Minutes by Cause Over Time',
-                    color_discrete_sequence=COLORS)
-    fig12 = apply_layout(fig12)
-    st.plotly_chart(fig12, use_container_width=True)
-
-    st.subheader("Delay Cause Breakdown by Airline")
-    airline_cause = filtered.groupby('carrier_name')[cause_cols].sum().reset_index()
-    airline_cause.columns = ['Airline'] + cause_labels
-    fig13 = px.bar(airline_cause, x='Airline', y=cause_labels,
-                   title='Delay Minutes by Cause per Airline',
-                   color_discrete_sequence=COLORS)
-    fig13.update_traces(marker_line_color='#333333', marker_line_width=0.5)
-    fig13 = apply_layout(fig13)
-    fig13.update_layout(xaxis_tickangle=-45)
-    st.plotly_chart(fig13, use_container_width=True)
+                    labels={'value': 'Delay Minutes', 'year': ''},
+                    color_discrete_sequence=SEQ)
+    st.plotly_chart(apply_layout(fig12, 340), use_container_width=True)
 
 # ============================================================
 # TAB 4 — RANKINGS
 # ============================================================
 with tab4:
     col1, col2 = st.columns(2)
-
     with col1:
-        st.subheader("🏆 Best Airlines (Lowest Delay Rate)")
-        best = (
-            filtered.groupby('carrier_name')
-            .agg(avg_delay=('delay_rate','mean'),
-                 total_flights=('arr_flights','sum'))
-            .reset_index()
-            .sort_values('avg_delay')
-            .head(10)
-        )
-        best.columns = ['Airline','Avg Delay Rate (%)','Total Flights']
+        st.markdown('<p class="panel-label">Best Carriers &middot; Lowest Delay Rate</p>', unsafe_allow_html=True)
+        best = (filtered.groupby('carrier_name')
+               .agg(avg_delay=('delay_rate', 'mean'), total_flights=('arr_flights', 'sum'))
+               .reset_index().sort_values('avg_delay').head(10))
+        best.columns = ['Carrier', 'Avg Delay Rate (%)', 'Total Flights']
         best['Avg Delay Rate (%)'] = best['Avg Delay Rate (%)'].round(2)
         st.dataframe(best, use_container_width=True, hide_index=True)
 
     with col2:
-        st.subheader("⚠️ Worst Airlines (Highest Delay Rate)")
-        worst = (
-            filtered.groupby('carrier_name')
-            .agg(avg_delay=('delay_rate','mean'),
-                 total_flights=('arr_flights','sum'))
-            .reset_index()
-            .sort_values('avg_delay', ascending=False)
-            .head(10)
-        )
-        worst.columns = ['Airline','Avg Delay Rate (%)','Total Flights']
+        st.markdown('<p class="panel-label">Worst Carriers &middot; Highest Delay Rate</p>', unsafe_allow_html=True)
+        worst = (filtered.groupby('carrier_name')
+                .agg(avg_delay=('delay_rate', 'mean'), total_flights=('arr_flights', 'sum'))
+                .reset_index().sort_values('avg_delay', ascending=False).head(10))
+        worst.columns = ['Carrier', 'Avg Delay Rate (%)', 'Total Flights']
         worst['Avg Delay Rate (%)'] = worst['Avg Delay Rate (%)'].round(2)
         st.dataframe(worst, use_container_width=True, hide_index=True)
 
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.subheader("🏆 Best Airports (Lowest Delay Rate)")
-        best_airport = (
-            filtered.groupby('airport')
-            .agg(avg_delay=('delay_rate','mean'),
-                 total_flights=('arr_flights','sum'))
-            .reset_index()
-            .sort_values('avg_delay')
-            .head(10)
-        )
-        best_airport.columns = ['Airport','Avg Delay Rate (%)','Total Flights']
+    col3, col4 = st.columns(2)
+    with col3:
+        st.markdown('<p class="panel-label">Best Airports &middot; Lowest Delay Rate</p>', unsafe_allow_html=True)
+        best_airport = (filtered.groupby('airport')
+                        .agg(avg_delay=('delay_rate', 'mean'), total_flights=('arr_flights', 'sum'))
+                        .reset_index().sort_values('avg_delay').head(10))
+        best_airport.columns = ['Airport', 'Avg Delay Rate (%)', 'Total Flights']
         best_airport['Avg Delay Rate (%)'] = best_airport['Avg Delay Rate (%)'].round(2)
         st.dataframe(best_airport, use_container_width=True, hide_index=True)
 
-    with col2:
-        st.subheader("⚠️ Worst Airports (Highest Delay Rate)")
-        worst_airport = (
-            filtered.groupby('airport')
-            .agg(avg_delay=('delay_rate','mean'),
-                 total_flights=('arr_flights','sum'))
-            .reset_index()
-            .sort_values('avg_delay', ascending=False)
-            .head(10)
-        )
-        worst_airport.columns = ['Airport','Avg Delay Rate (%)','Total Flights']
+    with col4:
+        st.markdown('<p class="panel-label">Worst Airports &middot; Highest Delay Rate</p>', unsafe_allow_html=True)
+        worst_airport = (filtered.groupby('airport')
+                         .agg(avg_delay=('delay_rate', 'mean'), total_flights=('arr_flights', 'sum'))
+                         .reset_index().sort_values('avg_delay', ascending=False).head(10))
+        worst_airport.columns = ['Airport', 'Avg Delay Rate (%)', 'Total Flights']
         worst_airport['Avg Delay Rate (%)'] = worst_airport['Avg Delay Rate (%)'].round(2)
         st.dataframe(worst_airport, use_container_width=True, hide_index=True)
 
-st.divider()
-st.caption("Data source: Bureau of Transportation Statistics (BTS) | Dashboard by Streamlit")
+st.markdown("<hr>", unsafe_allow_html=True)
+st.markdown(f"""
+    <p style="font-family:{DISPLAY_FONT}; font-size:0.7rem; color:{SUBTEXT}; letter-spacing:0.08em;">
+    DATA SOURCE: BUREAU OF TRANSPORTATION STATISTICS (BTS) &middot; DASHBOARD: STREAMLIT + PLOTLY
+    </p>
+""", unsafe_allow_html=True)
