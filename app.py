@@ -15,50 +15,109 @@ CORAL = '#D85A30'
 GREY  = '#888780'
 COLORS = [TEAL, AMBER, BLUE, CORAL, GREY]
 
-BG = '#0E1117'
+BG = '#0B0F14'
 CARD_BG = '#161B22'
 GRID = '#2A2F38'
-TEXT = '#E6E6E6'
+TEXT = '#F0F1F3'
 SUBTEXT = '#9CA3AF'
 
 st.markdown(f"""
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
 .stApp {{
-    background-color: {BG};
+    background: radial-gradient(circle at 15% 0%, rgba(29,158,117,0.10) 0%, rgba(11,15,20,0) 45%),
+                radial-gradient(circle at 85% 10%, rgba(55,138,221,0.10) 0%, rgba(11,15,20,0) 45%),
+                {BG};
+    font-family: 'Inter', sans-serif;
 }}
+
+/* Sidebar */
 [data-testid="stSidebar"] {{
-    background-color: {CARD_BG};
+    background: linear-gradient(180deg, #161B22 0%, #10141A 100%);
     border-right: 1px solid {GRID};
 }}
-[data-testid="stMetric"] {{
-    background-color: {CARD_BG};
-    border: 1px solid {GRID};
-    border-radius: 12px;
-    padding: 16px 18px;
+[data-testid="stSidebar"] h1 {{
+    background: linear-gradient(90deg, {TEAL}, {BLUE});
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800;
 }}
+
+/* Title */
+h1 {{
+    background: linear-gradient(90deg, {TEAL} 0%, {BLUE} 50%, {AMBER} 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 800 !important;
+    letter-spacing: -0.5px;
+}}
+h2, h3 {{
+    color: {TEXT};
+    font-weight: 700;
+}}
+
+/* Metric cards — each a different color accent */
+[data-testid="stMetric"] {{
+    background: linear-gradient(145deg, {CARD_BG} 0%, #1B222C 100%);
+    border: 1px solid {GRID};
+    border-left: 4px solid {TEAL};
+    border-radius: 14px;
+    padding: 16px 18px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    transition: transform 0.15s ease;
+}}
+[data-testid="stMetric"]:hover {{
+    transform: translateY(-2px);
+}}
+div[data-testid="stHorizontalBlock"] > div:nth-of-type(1) [data-testid="stMetric"] {{ border-left-color: {TEAL}; }}
+div[data-testid="stHorizontalBlock"] > div:nth-of-type(2) [data-testid="stMetric"] {{ border-left-color: {CORAL}; }}
+div[data-testid="stHorizontalBlock"] > div:nth-of-type(3) [data-testid="stMetric"] {{ border-left-color: {AMBER}; }}
+div[data-testid="stHorizontalBlock"] > div:nth-of-type(4) [data-testid="stMetric"] {{ border-left-color: {BLUE}; }}
+div[data-testid="stHorizontalBlock"] > div:nth-of-type(5) [data-testid="stMetric"] {{ border-left-color: {GREY}; }}
+
 [data-testid="stMetricLabel"] {{
     color: {SUBTEXT};
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
 }}
 [data-testid="stMetricValue"] {{
     color: {TEXT};
+    font-weight: 800;
 }}
-h1, h2, h3 {{
-    color: {TEXT};
-}}
+
+/* Tabs */
 .stTabs [data-baseweb="tab-list"] {{
-    gap: 6px;
+    gap: 8px;
+    background-color: transparent;
 }}
 .stTabs [data-baseweb="tab"] {{
     background-color: {CARD_BG};
-    border-radius: 8px 8px 0 0;
+    border: 1px solid {GRID};
+    border-radius: 10px;
     color: {SUBTEXT};
-    padding: 10px 18px;
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: all 0.15s ease;
+}}
+.stTabs [data-baseweb="tab"]:hover {{
+    color: {TEXT};
+    border-color: {TEAL};
 }}
 .stTabs [aria-selected="true"] {{
-    background-color: {CARD_BG};
+    background: linear-gradient(135deg, rgba(29,158,117,0.18), rgba(55,138,221,0.12));
     color: {TEAL} !important;
-    border-bottom: 2px solid {TEAL};
+    border: 1px solid {TEAL} !important;
 }}
+
+/* Section headers get a small colored accent bar */
+h3 {{
+    border-left: 3px solid {BLUE};
+    padding-left: 10px;
+}}
+
 .block-container {{
     padding-top: 2rem;
 }}
@@ -69,6 +128,18 @@ hr {{
     color: {SUBTEXT};
     font-size: 15px;
     margin-top: -8px;
+}}
+
+/* Dataframes */
+[data-testid="stDataFrame"] {{
+    border: 1px solid {GRID};
+    border-radius: 10px;
+    overflow: hidden;
+}}
+
+/* Sidebar widgets */
+[data-testid="stSidebar"] .stSlider, [data-testid="stSidebar"] .stMultiSelect {{
+    padding-bottom: 6px;
 }}
 </style>
 """, unsafe_allow_html=True)
