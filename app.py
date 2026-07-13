@@ -5,6 +5,20 @@ import plotly.graph_objects as go
 
 st.set_page_config(page_title="Airline Delay Dashboard", page_icon="✈️", layout="wide")
 
+st.markdown("""
+    <style>
+    .main { background-color: white; }
+    div[data-testid="stMetric"] {
+        background-color: #FAFAF7;
+        border: 1px solid #EDEBE3;
+        border-radius: 8px;
+        padding: 12px 10px;
+    }
+    div[data-testid="stMetricLabel"] { color: #888780; }
+    div[data-testid="stMetricValue"] { color: #2C2C2A; }
+    </style>
+""", unsafe_allow_html=True)
+
 TEAL  = '#1D9E75'
 AMBER = '#BA7517'
 BLUE  = '#378ADD'
@@ -13,21 +27,25 @@ GREY  = '#888780'
 COLORS = [TEAL, AMBER, BLUE, CORAL, GREY]
 
 def apply_layout(fig):
+    """Shared layout template — mirrors the notebook: clean white background,
+    no gridlines, muted grey axis lines, generous margins."""
     fig.update_layout(
-        paper_bgcolor='#F8F9FA',
-        plot_bgcolor='#F8F9FA',
-        font=dict(color='#1a1a1a', size=13),
-        title_font=dict(size=16, color='#1a1a1a'),
-        legend=dict(font=dict(color='#1a1a1a', size=12),
-                    bgcolor='#F8F9FA', borderwidth=1, bordercolor='#E0E0E0'),
-        margin=dict(t=60, b=60, l=60, r=40)
+        paper_bgcolor='white',
+        plot_bgcolor='white',
+        font=dict(family='Arial, sans-serif', color='#2C2C2A', size=13),
+        title_font=dict(size=16, color='#2C2C2A'),
+        legend=dict(font=dict(color='#2C2C2A', size=12),
+                    bgcolor='white', borderwidth=0),
+        margin=dict(t=60, b=50, l=60, r=30)
     )
-    fig.update_xaxes(tickfont=dict(color='#1a1a1a', size=12),
-                     title_font=dict(color='#1a1a1a', size=13),
-                     linecolor='#333333', linewidth=1, gridcolor='#E0E0E0')
-    fig.update_yaxes(tickfont=dict(color='#1a1a1a', size=12),
-                     title_font=dict(color='#1a1a1a', size=13),
-                     linecolor='#333333', linewidth=1, gridcolor='#E0E0E0')
+    fig.update_xaxes(tickfont=dict(color='#2C2C2A', size=12),
+                     title_font=dict(color='#2C2C2A', size=13),
+                     showgrid=False, linecolor='#888780', linewidth=1,
+                     ticks='outside', tickcolor='#888780')
+    fig.update_yaxes(tickfont=dict(color='#2C2C2A', size=12),
+                     title_font=dict(color='#2C2C2A', size=13),
+                     showgrid=True, gridcolor='#EDEBE3', gridwidth=1,
+                     linecolor='#888780', linewidth=1, zeroline=False)
     return fig
 
 @st.cache_data
@@ -57,8 +75,12 @@ year_range = st.sidebar.slider(
     (2015, int(df['year'].max()))
 )
 all_airlines = sorted(df['carrier_name'].unique())
+top6_by_volume = (
+    df.groupby('carrier_name')['arr_flights'].sum()
+    .nlargest(6).index.tolist()
+)
 selected_airlines = st.sidebar.multiselect(
-    "Select Airlines", all_airlines, default=all_airlines[:6]
+    "Select Airlines", all_airlines, default=top6_by_volume
 )
 all_seasons = ['Winter','Spring','Summer','Fall']
 selected_seasons = st.sidebar.multiselect(
