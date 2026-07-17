@@ -106,12 +106,6 @@ div[data-testid="stHorizontalBlock"] > div:nth-of-type(5) [data-testid="stMetric
     font-weight: 600;
     transition: all 0.15s ease;
 }}
-.stTabs [data-baseweb="tab"]:hover {{
-    color: {TEXT};
-}}
-.stTabs [aria-selected="true"] {{
-    background: linear-gradient(135deg, rgba(55,138,221,0.18), rgba(55,138,221,0.10));
-}}
 
 /* Section headers get a small colored accent bar */
 h3 {{
