@@ -13,7 +13,11 @@ AMBER = '#BA7517'
 BLUE  = '#378ADD'
 CORAL = '#D85A30'
 GREY  = '#888780'
+PURPLE = '#8B5CF6'
 COLORS = [TEAL, AMBER, BLUE, CORAL, GREY]
+
+# Used specifically for the "By Airline" tab charts so no green/teal appears there
+AIRLINE_TAB_COLORS = [BLUE, AMBER, CORAL, GREY, PURPLE]
 
 BG = '#0B0F14'
 CARD_BG = '#161B22'
@@ -416,7 +420,7 @@ with tab1:
     st.plotly_chart(fig5, use_container_width=True)
 
 # ============================================================
-# TAB 2 — BY AIRLINE
+# TAB 2 — BY AIRLINE  (no green/teal in this tab)
 # ============================================================
 with tab2:
     col1, col2 = st.columns(2)
@@ -434,7 +438,7 @@ with tab2:
                       title='Average Delay Rate by Airline',
                       color='delay_rate',
                       color_continuous_scale=[
-                          [0,TEAL],[0.5,AMBER],[1,CORAL]
+                          [0,BLUE],[0.5,AMBER],[1,CORAL]
                       ])
         fig6.update_traces(marker_line_color=CARD_BG, marker_line_width=1)
         fig6 = apply_layout(fig6, height=460)
@@ -475,7 +479,7 @@ with tab2:
                    color='carrier_name', markers=True,
                    labels={'delay_rate':'Delay Rate (%)','year':'Year','carrier_name':'Airline'},
                    title='Delay Rate Over Time — Top 5 Airlines',
-                   color_discrete_sequence=COLORS)
+                   color_discrete_sequence=AIRLINE_TAB_COLORS)
     fig8.update_traces(line_width=2.5, marker=dict(size=6, line=dict(width=1, color=CARD_BG)))
     fig8 = apply_layout(fig8, height=420)
     st.plotly_chart(fig8, use_container_width=True)
