@@ -108,7 +108,6 @@ div[data-testid="stHorizontalBlock"] > div:nth-of-type(5) [data-testid="stMetric
 }}
 .stTabs [data-baseweb="tab"]:hover {{
     color: {TEXT};
-    border-color: {BLUE};
 }}
 .stTabs [aria-selected="true"] {{
     background: linear-gradient(135deg, rgba(55,138,221,0.18), rgba(55,138,221,0.10));
