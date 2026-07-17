@@ -113,7 +113,6 @@ div[data-testid="stHorizontalBlock"] > div:nth-of-type(5) [data-testid="stMetric
 .stTabs [aria-selected="true"] {{
     background: linear-gradient(135deg, rgba(55,138,221,0.18), rgba(55,138,221,0.10));
     color: {BLUE} !important;
-    border: 1px solid {BLUE} !important;
 }}
 
 /* Section headers get a small colored accent bar */
