@@ -263,21 +263,40 @@ def apply_layout(fig, height=420):
 
 @st.cache_data
 def load_data():
-    url = "https://raw.githubusercontent.com/hetmodi2004/airline_delay_analysis/main/airline_small.csv"
-    df = pd.read_csv(url)
-    df['delay_rate'] = df['arr_del15'] / df['arr_flights'] * 100
-    df['cancel_rate'] = df['arr_cancelled'] / df['arr_flights'] * 100
-    df['total_delay_min'] = (df['carrier_delay'] + df['weather_delay'] +
-                              df['nas_delay'] + df['security_delay'] +
-                              df['late_aircraft_delay'])
-    df['season'] = df['month'].map({
-        12:'Winter',1:'Winter',2:'Winter',
-        3:'Spring', 4:'Spring',5:'Spring',
-        6:'Summer', 7:'Summer',8:'Summer',
-        9:'Fall',  10:'Fall', 11:'Fall'
-    })
-    return df
+    df = pd.read_csv("airline_small.csv")
 
+    df['delay_rate'] = (
+        df['arr_del15'] / df['arr_flights']
+    ) * 100
+
+    df['cancel_rate'] = (
+        df['arr_cancelled'] / df['arr_flights']
+    ) * 100
+
+    df['total_delay_min'] = (
+        df['carrier_delay'] +
+        df['weather_delay'] +
+        df['nas_delay'] +
+        df['security_delay'] +
+        df['late_aircraft_delay']
+    )
+
+    df['season'] = df['month'].map({
+        12: 'Winter',
+        1: 'Winter',
+        2: 'Winter',
+        3: 'Spring',
+        4: 'Spring',
+        5: 'Spring',
+        6: 'Summer',
+        7: 'Summer',
+        8: 'Summer',
+        9: 'Fall',
+        10: 'Fall',
+        11: 'Fall'
+    })
+
+    return df
 df = load_data()
 
 # ---------------------------------------------------------------
